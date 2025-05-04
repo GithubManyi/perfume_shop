@@ -1,0 +1,414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Shopping Cart</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    /* Custom styles */
+    body {
+      background-color: #f8f9fa;
+    }
+    .cart-header {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .product-image {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      display: none; /* Initially hidden */
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      background-color: #f8f9fa;
+    }
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+    }
+    .sticky-summary {
+      position: sticky;
+      top: 20px;
+    }
+    .shimmer {
+      background: linear-gradient(
+        to right,
+        #eeeeee 8%,
+        #dddddd 18%,
+        #eeeeee 33%
+      );
+      background-size: 800px 104px;
+      animation: shimmer 1.2s infinite linear;
+    }
+    @keyframes shimmer {
+      0% { background-position: -800px 0 }
+      100% { background-position: 800px 0 }
+    }
+    .image-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .image-container {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+    /* Button styles */
+    #back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: gray;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 50%;
+      font-size: 24px;
+      text-align: center;
+      text-decoration: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: background-color 0.3s ease, opacity 0.5s ease;
+      z-index: 1000;
+    }
+
+    /* Hover effect: blue on hover */
+    #back-to-top:hover {
+      background-color:  #007bff;
+      color: white;
+    }
+
+    /* Show the button with fade-in */
+    #back-to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="container py-4">
+    <!-- Header Card -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header cart-header d-flex justify-content-between align-items-center">
+        <div><i class="bi bi-cart-fill me-2"></i> Your Shopping Cart</div>
+        <span class="badge bg-light text-dark">{{ cart_items|length }} item{{ cart_items|length|pluralize }}</span>
+      </div>
+    </div>
+
+    <!-- Page Layout -->
+    <div class="row">
+      <!-- Left Column: Cart Table -->
+      <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 120px;">Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Subtotal</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in cart_items %}
+                  <tr>
+                    <td>
+                      <div class="image-container">
+                        <!-- Shimmer Placeholder -->
+                        <div class="image-placeholder shimmer">
+                          <i class="bi bi-image text-muted"></i>
+                        </div>
+                        
+                        <!-- Actual Product Image -->
+                        {% if item.product.photo %}
+                        <img src="{{ item.product.photo.url }}" 
+                             alt="{{ item.product.name }}" 
+                             class="product-image img-thumbnail"
+                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                             onerror="this.onerror=null;this.src='{% static 'images/placeholder.jpg' %}'; this.style.display='block'; this.previousElementSibling.style.display='none'">
+                        {% else %}
+                        <img src="{% static 'images/placeholder.jpg' %}" 
+                             alt="Placeholder" 
+                             class="product-image img-thumbnail"
+                             style="display: block;">
+                        <div class="image-placeholder" style="display: none;"></div>
+                        {% endif %}
+                      </div>
+                    </td>
+                    <td class="align-middle">
+                      <strong>{{ item.product.name }}</strong>
+                      <div class="text-muted small">{{ item.product.description|truncatewords:5 }}</div>
+                    </td>
+                    <td class="align-middle">KES {{ item.product.price|floatformat:2 }}</td>
+                    <td class="align-middle">
+                      <form method="post" action="{% url 'update_cart' item.product.id %}" class="d-flex">
+                        {% csrf_token %}
+                        <div class="input-group input-group-sm" style="width: 120px;">
+                          <button class="btn btn-outline-secondary minus-btn" type="button">
+                            <i class="bi bi-dash"></i>
+                          </button>
+                          <input type="number" name="quantity" value="{{ item.quantity }}" min="1" 
+                                 class="form-control text-center">
+                                 <button class="btn btn-outline-success plus-btn" type="button">
+                                    <i class="bi bi-plus"></i>
+                                  </button>                                  
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary ms-2">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                      </form>
+                    </td>
+                    <td class="align-middle">KES {{ item.subtotal|floatformat:2 }}</td>
+                    <td class="align-middle">
+                      <form method="post" action="{% url 'remove_from_cart' item.product.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center py-4">
+                      <i class="bi bi-cart-x text-muted" style="font-size: 2rem;"></i>
+                      <h5 class="mt-2">Your cart is empty</h5>
+                      <a href="/" class="btn btn-primary mt-2">Continue Shopping</a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Summary -->
+      <div class="col-lg-4">
+        <div class="card shadow-sm sticky-summary">
+          <div class="card-header">
+            <strong>Order Summary</strong>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Subtotal:</span>
+              <span>KES {{ total|floatformat:2 }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span>Delivery:</span>
+              <span class="text-success">FREE</span>
+            </div>
+            <div class="d-flex justify-content-between border-top pt-2 mb-3">
+              <strong>Total:</strong>
+              <strong>KES {{ total|floatformat:2 }}</strong>
+            </div>
+            <button class="btn btn-success w-100 py-2" data-bs-toggle="modal" data-bs-target="#checkoutModal">
+              <i class="bi bi-lock-fill me-2"></i> Secure Checkout
+            </button>
+            <a href="/" class="btn btn-outline-secondary w-100 mt-2">
+              <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Checkout Modal -->
+  <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="checkoutModalLabel">Secure Checkout</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Our delivery is <strong>pay-on-delivery</strong>. You can only pay Brian. Orina when you receive your order.
+          </div>
+          <p>Your order will be confirmed and prepared for delivery. Expect a call from the Brian Orina.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="agreeButton" class="btn btn-success">
+            <i class="bi bi-check-lg me-2"></i> I Agree & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Custom Scripts -->
+  <script>
+    // Quantity buttons functionality
+    document.querySelectorAll('.minus-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const input = this.closest('.input-group').querySelector('input[type=number]');
+        if (parseInt(input.value) > 1) {
+          input.value = parseInt(input.value) - 1;
+        }
+      });
+    });
+    
+    document.querySelectorAll('.plus-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const input = this.closest('.input-group').querySelector('input[type=number]');
+        input.value = parseInt(input.value) + 1;
+      });
+    });
+    
+    // WhatsApp Integration
+    document.getElementById('agreeButton').addEventListener('click', function() {
+      const sellerPhone = "254742141100"; // Your WhatsApp number
+      
+      let message = "🛒 *NEW ORDER REQUEST* 🛒\n\n";
+      message += "*Customer:* {{ request.user.username|default:'Guest' }}\n\n";
+      message += "*Order Items:*\n";
+      
+      {% for item in cart_items %}
+      message += `➤ {{ item.product.name }}\n`;
+      message += `   - Quantity: {{ item.quantity }}\n`;
+      message += `   - Price: KES {{ item.product.price|floatformat:2 }}\n`;
+      message += `   - Subtotal: KES {{ item.subtotal|floatformat:2 }}\n\n`;
+      {% endfor %}
+      
+      message += `*TOTAL: KES {{ total|floatformat:2 }}*\n\n`;
+      message += "Please confirm this order and provide delivery details. Thank you! 🙏";
+      
+      const encodedMessage = encodeURIComponent(message);
+      const waLink = `https://wa.me/${sellerPhone}?text=${encodedMessage}`;
+      
+      // Close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('checkoutModal'));
+      modal.hide();
+      
+      // Open WhatsApp
+      window.open(waLink, "_blank");      message += `*TOTAL: KES {{ total|floatformat:2 }}*\n\n`;
+      message += "📞 Expect a confirmation call shortly.\n\n";
+      message += "_Thank you for shopping with us!_";
+
+      const whatsappUrl = `https://wa.me/${sellerPhone}?text=${encodeURIComponent(message)}`;
+      window.location.href = whatsappUrl;
+    });
+  </script>
+</body>
+</html>
+
+<!-- Back to top button -->
+<a href="#" id="back-to-top" title="Back to top">
+    <i class="bi bi-arrow-up-short"></i>
+  </a>
+  
+    <!-- Back to Top Button -->
+    <a href="#" id="back-to-top" title="Back to top">
+        <i class="bi bi-arrow-up-short"></i>
+      </a>
+        
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+      // Back to top button
+      window.addEventListener('scroll', function() {
+        var backToTop = document.getElementById('back-to-top');
+        if (window.pageYOffset > 300) {
+          backToTop.style.display = 'block';
+        } else {
+          backToTop.style.display = 'none';
+        }
+      });
+      
+      document.getElementById('back-to-top').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      });
+      
+      // Star rating interaction
+      const stars = document.querySelectorAll('.star-rating input');
+      stars.forEach(star => {
+        star.addEventListener('change', function() {
+          const rating = this.value;
+          // You can add any additional logic here if needed
+        });
+      });
+      const button = document.getElementById('back-to-top');
+  
+  // Show/hide with fade
+  window.addEventListener('scroll', function () {
+    if (window.scrollY > 200) {
+      button.classList.add('show');
+    } else {
+      button.classList.remove('show');
+    }
+  });
+  
+  // Smooth scroll to top
+  button.addEventListener('click', function (e) {
+    e.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+  </script>
+  </body>
+  </html>
+  <!-- Footer -->
+  <footer class="bg-dark text-light mt-5 pt-4 pb-3">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <h4>About Coastal Scents 🌴</h4>
+          <p>We deal with Arabian & English perfumes.Free Delivery & Pick-up mtaani.</p>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h4>Quick Links</h4>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-light">Home</a></li>
+            <li><a href="#" class="text-light">New Arrivals</a></li>
+            <li><a href="#" class="text-light">Weekly Offers</a></li>
+            <li><a href="#" class="text-light">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4 mb-3">
+          <h4>Contact</h4>
+          <p><strong>Phone:</strong> 0742141100</p>
+          <p><strong>Email:</strong> brianorina45@gmail.com</p>
+          <p><strong>Location:</strong> Mombasa, Kenya</p>
+          <div class="d-flex gap-2">
+            <a href="https://wa.me/qr/XY53LZU4GEHEC1" target="_blank" class="btn btn-success btn-sm">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            <a href="https://instagram.com/coastal_scents.ke?utm_source=qr&igsh=N3Fwbjgxbmx2NmY4" class="btn" style="background: linear-gradient(to right, #feda75, #d62976, #962fbf, #4f5bd5); color: white;" target="_blank">
+              <i class="bi bi-instagram"></i> Instagram 
+            </a>
+            <a href="https://tiktok.com/@coastalscents_001?_t=ZM-8vaYHAGfw9u&_r=1" target="_blank" class="btn" style="background-color: #010101; color: #69C9D0;">
+              <i class="bi bi-music-note-beamed"></i> TikTok
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Coastal Scents. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+    

@@ -1,0 +1,720 @@
+{% load static %}
+
+<!-- External CSS + Fonts -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+
+<style>
+  .hero-section {
+    position: relative;
+    height: 400px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 0;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .hero-section .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 10, 0.6);
+    z-index: 1;
+  }
+  
+  .hero-section .content {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .coastal-title {
+    font-family: 'Georgia', serif;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    color: #f8f9fa;
+    letter-spacing: 2px;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .card-hover {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s;
+    height: 100%;
+  }
+  .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-wrapper {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+  }
+  .image-wrapper img {
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.5s ease;
+    position: relative;
+    z-index: 2;
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Shimmer effect for loading images */
+  .image-wrapper.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+    z-index: 4;
+  }
+
+  @keyframes shimmer {
+    100% {
+      left: 150%;
+    }
+  }
+
+  /* Image placeholder with loading animation */
+  .image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  @keyframes shine {
+    to {
+      background-position-x: -200%;
+    }
+  }
+
+  /* Product card styling */
+  .product-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+  }
+  
+  .product-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Zoom effect on hover */
+  .product-card:hover .image-wrapper img {
+    transform: scale(1.05);
+  }
+
+  /* Action buttons */
+  .product-actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    display: flex;
+    justify-content: space-around;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 3;
+  }
+  
+  /* Show buttons on hover (desktop) */
+  @media (min-width: 768px) {
+    .product-card:hover .product-actions {
+      opacity: 1;
+    }
+  }
+
+  /* Mobile action buttons - always visible below image */
+  .mobile-product-actions {
+    display: none;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    justify-content: space-around;
+    border-top: 1px solid #eee;
+  }
+  
+  .mobile-product-actions .btn {
+    flex: 1;
+    margin: 0 2px;
+    padding: 5px;
+    font-size: 0.8rem;
+  }
+  
+  @media (max-width: 767px) {
+    .mobile-product-actions {
+      display: flex;
+    }
+    
+    /* Hide desktop hover actions on mobile */
+    .product-actions {
+      display: none;
+    }
+    
+    /* Disable shimmer on mobile for better performance */
+    .image-wrapper.loading::after {
+      display: none;
+    }
+  }
+
+  /* Header */
+  .coastal-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 3.2rem;
+    letter-spacing: 1px;
+    color: #1E3A8A;
+  }
+  .coastal-title span {
+    font-size: 2.5rem;
+  }
+  .coastal-title:hover {
+    color: #FF8C00;
+    text-shadow: 2px 2px 8px rgba(255, 140, 0, 0.6);
+  }
+  .lead {
+    font-size: 1.1rem;
+    color: #6B7280;
+  }
+
+  footer {
+    background-color: #e9ecef;
+    color: #333;
+    padding: 2rem 0;
+    margin: 0;
+  }
+
+  footer h4 {
+    font-size: 1.25rem;
+    border-bottom: 2px solid #ced4da;
+    padding-bottom: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .footer-bottom {
+    text-align: center;
+    padding: 10px 0;
+    font-size: 18px;
+    color: #333;
+    border-top: 1px solid #ced4da;
+    margin: 0;
+  }
+
+  #back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 10px;
+    width: 45px;
+    height: 45px;
+    background-color: #343a40;
+    color: white;
+    font-size: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 45px;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 999;
+    display: none;
+    transition: background-color 0.3s ease;
+  }
+
+  /* Card content styling */
+  .card-body-content {
+    padding: 15px;
+  }
+
+  /* product name */
+  .card-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color:#1E3A8A; 
+  }
+
+  /* Price styling */
+  .product-price {
+    font-weight: normal;
+    color: #16A34A; 
+    font-size: 1.1rem;
+  }
+
+  /* Grid layout */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 1200px) {
+    .products-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .products-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 576px) {
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+{% if background_perfume %}
+<div class="hero-section text-white text-center py-5 position-relative" style="background-image: url('{{ background_perfume.photo.url }}')">
+  <a href="{% url 'view_cart' %}" class="btn btn-outline-light position-absolute" style="bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10;">
+    {% if cart_item_count %}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+        {{ cart_item_count }}
+    </span>
+    {% endif %}
+    View Cart
+  </a>
+
+  <div class="overlay">
+    <h1 class="display-4 coastal-title">Coastal Scents 🌴</h1>
+    <p class="lead">Discover Arabian & English perfumes here!</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Search -->
+<div class="container mt-4">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5 col-12">
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search perfumes..." value="{{ request.GET.q }}">
+      </div>
+    </div>
+    <div class="col-md-3 col-12">
+      <select class="form-select" name="brand">
+        <option value="">All Brands</option>
+        {% for brand in brands %}
+          <option value="{{ brand }}" {% if request.GET.brand == brand %}selected{% endif %}>{{ brand }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4 col-12 d-flex gap-2">
+      <button class="btn btn-primary w-100" type="submit">Search</button>
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary w-100">Clear</a>       
+    </div>
+  </form>
+</div>
+
+<!-- Weekly Offers Section -->
+{% if weekly_offers %}
+  <div class="container mt-4">
+    <h3 class="mb-3">Weekly Offers</h3>
+    <div class="products-grid">
+      {% for product in weekly_offers %}
+        <div class="product-card">
+          <div class="image-wrapper loading">
+            {% if product.photo %}
+              <img src="{{ product.photo.url }}" 
+                   loading="lazy" 
+                   class="img-fluid w-100" 
+                   alt="{{ product.name }}"
+                   style="height: 250px; object-fit: cover;"
+                   onload="this.style.opacity='1'; this.parentElement.classList.remove('loading');"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.remove('loading');">
+              <div class="image-placeholder">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">Loading image...</p>
+                </div>
+              </div>
+            {% else %}
+              <div class="image-placeholder" style="display: flex;">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">No image available</p>
+                </div>
+              </div>
+            {% endif %}
+            <div class="product-actions">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-cart"></i>
+              </a>
+              <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+          <div class="mobile-product-actions">
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i> View
+            </a>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-cart"></i> Cart
+            </a>
+            <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-whatsapp"></i> Chat
+            </a>
+          </div>
+          <div class="card-body-content">
+            <h6 class="card-title mb-1">{{ product.name }}</h6>
+            <p class="product-price mb-1">Ksh {{ product.price }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- New Arrivals Section -->
+{% if new_arrivals %}
+  <div class="container mt-4">
+    <h3 class="mb-3">New Arrivals</h3>
+    <div class="products-grid">
+      {% for product in new_arrivals %}
+        <div class="product-card">
+          <div class="image-wrapper loading">
+            {% if product.photo %}
+              <img src="{{ product.photo.url }}" 
+                   loading="lazy" 
+                   class="img-fluid w-100" 
+                   alt="{{ product.name }}"
+                   style="height: 250px; object-fit: cover;"
+                   onload="this.style.opacity='1'; this.parentElement.classList.remove('loading');"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.remove('loading');">
+              <div class="image-placeholder">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">Loading image...</p>
+                </div>
+              </div>
+            {% else %}
+              <div class="image-placeholder" style="display: flex;">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">No image available</p>
+                </div>
+              </div>
+            {% endif %}
+            <div class="product-actions">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-cart"></i>
+              </a>
+              <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+            </div>
+          </div>
+          <div class="mobile-product-actions">
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i> View
+            </a>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-cart"></i> Cart
+            </a>
+            <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-whatsapp"></i> Chat
+            </a>
+          </div>
+          <div class="card-body-content">
+            <h6 class="card-title mb-1">{{ product.name }}</h6>
+            <p class="product-price mb-1">Ksh {{ product.price }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- Discounted Products Section -->
+{% if discounted_products %}
+  <div class="container mt-4">
+    <h3 class="mb-3">Discounted Products</h3>
+    <div class="products-grid">
+      {% for product in discounted_products %}
+        <div class="product-card">
+          <div class="image-wrapper loading">
+            {% if product.photo %}
+              <img src="{{ product.photo.url }}" 
+                   loading="lazy" 
+                   class="img-fluid w-100" 
+                   alt="{{ product.name }}"
+                   style="height: 250px; object-fit: cover;"
+                   onload="this.style.opacity='1'; this.parentElement.classList.remove('loading');"
+                   onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.remove('loading');">
+              <div class="image-placeholder">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">Loading image...</p>
+                </div>
+              </div>
+            {% else %}
+              <div class="image-placeholder" style="display: flex;">
+                <div>
+                  <i class="bi bi-image" style="font-size: 2rem;"></i>
+                  <p class="mt-2">No image available</p>
+                </div>
+              </div>
+            {% endif %}
+            <div class="product-actions">
+              <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-cart"></i>
+              </a>
+              <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-whatsapp"></i>
+              </a>
+              {% if product.instagram_link %}
+                <a href="{{ product.instagram_link }}" target="_blank" class="btn btn-sm btn-outline-danger">
+                  <i class="bi bi-instagram"></i>
+                </a>
+              {% endif %}
+              {% if product.tiktok_link %}
+                <a href="{{ product.tiktok_link }}" target="_blank" class="btn btn-sm btn-outline-dark">
+                  <i class="bi bi-music-note-beamed"></i>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+          <div class="mobile-product-actions">
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-eye"></i> View
+            </a>
+            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-cart"></i> Cart
+            </a>
+            <a href="https://wa.me/{{ product.whatsapp_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-whatsapp"></i> Chat
+            </a>
+          </div>
+          <div class="card-body-content">
+            <h6 class="card-title mb-1">{{ product.name }}</h6>
+            <p class="product-price mb-1">Ksh {{ product.price }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+<!-- All Products Section -->
+<div class="container mt-4">
+  {% if query %}
+    <h3>Search Results for "{{ query }}"</h3>
+  {% else %}
+    <h3>All Products</h3>
+  {% endif %}
+
+  <div class="products-grid">
+    {% for perfume in perfumes %}
+      <div class="product-card">
+        <div class="image-wrapper loading">
+          {% if perfume.photo %}
+            <img src="{{ perfume.photo.url }}" 
+                 loading="lazy"
+                 class="d-block w-100" 
+                 style="height: 250px; object-fit: cover;" 
+                 alt="{{ perfume.name }}"
+                 onload="this.style.opacity='1'; this.parentElement.classList.remove('loading');"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.parentElement.classList.remove('loading');">
+            <div class="image-placeholder">
+              <div>
+                <i class="bi bi-image" style="font-size: 2rem;"></i>
+                <p class="mt-2">Loading image...</p>
+              </div>
+            </div>
+          {% else %}
+            <div class="image-placeholder" style="display: flex;">
+              <div>
+                <i class="bi bi-image" style="font-size: 2rem;"></i>
+                <p class="mt-2">No image available</p>
+              </div>
+            </div>
+          {% endif %}
+          
+          <div class="product-actions">
+            <a href="{% url 'product_detail' perfume.id %}" class="btn btn-sm btn-outline-primary" title="View Details">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'add_to_cart' perfume.id %}" class="btn btn-sm btn-outline-primary" title="Add to Cart">
+              <i class="bi bi-cart"></i>
+            </a>
+            <a href="https://wa.me/{{ perfume.phone_number }}" target="_blank" class="btn btn-sm btn-outline-success" title="Chat on WhatsApp">
+              <i class="bi bi-whatsapp"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="mobile-product-actions">
+          <a href="{% url 'product_detail' perfume.id %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-eye"></i> View
+          </a>
+          <a href="{% url 'add_to_cart' perfume.id %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-cart"></i> Cart
+          </a>
+          <a href="https://wa.me/{{ perfume.phone_number }}" target="_blank" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-whatsapp"></i> Chat
+          </a>
+        </div>
+        
+        <div class="card-body-content">
+          <h6 class="card-title mb-1">{{ perfume.name }}</h6>
+          <p class="product-price mb-1">Ksh {{ perfume.price }}</p>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-5">
+        <i class="bi bi-emoji-frown" style="font-size: 2rem;"></i>
+        <h4 class="mt-3">No products found</h4>
+        <a href="{% url 'home' %}" class="btn btn-primary mt-2">View All Products</a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Back to top button -->
+<a href="#" id="back-to-top" title="Back to top">
+  <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<!-- Footer -->
+<footer class="bg-dark text-light mt-5 pt-4 pb-3">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <h4>About Coastal Scents 🌴</h4>
+        <p>We deal with Arabian & English perfumes.<br>Free Delivery & Pick-up mtaani.</p>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h4>Quick Links</h4>
+        <ul class="list-unstyled">
+          <li><a href="#" class="text-light">Home</a></li>
+          <li><a href="#" class="text-light">New Arrivals</a></li>
+          <li><a href="#" class="text-light">Weekly Offers</a></li>
+          <li><a href="#" class="text-light">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4 mb-3">
+        <h4>Contact</h4>
+        <p><strong>Phone:</strong> 0742141100</p>
+        <p><strong>Email:</strong> brianorina45@gmail.com</p>
+        <p><strong>Location:</strong> Mombasa, Kenya</p>
+        <div class="d-flex gap-2">
+          <a href="https://wa.me/qr/XY53LZU4GEHEC1" target="_blank" class="btn btn-success btn-sm">
+            <i class="bi bi-whatsapp"></i> WhatsApp
+          </a>
+          <a href="https://instagram.com/coastal_scents.ke?utm_source=qr&igsh=N3Fwbjgxbmx2NmY4" class="btn" style="background: linear-gradient(to right, #feda75, #d62976, #962fbf, #4f5bd5); color: white;" target="_blank">
+            <i class="bi bi-instagram"></i> Instagram 
+          </a>
+          <a href="https://tiktok.com/@coastalscents_001?_t=ZM-8vaYHAGfw9u&_r=1" target="_blank" class="btn" style="background-color: #010101; color: #69C9D0;">
+            <i class="bi bi-music-note-beamed"></i> TikTok
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Coastal Scents. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Back to top button
+  const backToTop = document.getElementById("back-to-top");
+  
+  window.addEventListener("scroll", () => {
+    backToTop.style.display = window.pageYOffset > 300 ? "block" : "none";
+  });
+
+  backToTop.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Handle image loading states
+    document.querySelectorAll('.image-wrapper img').forEach(img => {
+      // Add loading class to parent wrapper
+      img.parentElement.classList.add('loading');
+      
+      // If image is already loaded (from cache)
+      if (img.complete && img.naturalWidth !== 0) {
+        img.style.opacity = '1';
+        img.parentElement.classList.remove('loading');
+      }
+      
+      // Add error handler if not already set
+      if (!img.onerror) {
+        img.onerror = function() {
+          this.style.display = 'none';
+          const placeholder = this.nextElementSibling;
+          if (placeholder && placeholder.classList.contains('image-placeholder')) {
+            placeholder.style.display = 'flex';
+          }
+          this.parentElement.classList.remove('loading');
+        };
+      }
+    });
+  });
+
+  // Handle page navigation (for back/forward cache)
+  window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+      document.querySelectorAll('.image-wrapper img').forEach(img => {
+        if (img.complete && img.naturalWidth !== 0) {
+          img.style.opacity = '1';
+          img.parentElement.classList.remove('loading');
+        }
+      });
+    }
+  });
+</script>
